@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Link Filter + Smart Copy</title>
+<style>
+    body{font-family:Arial,sans-serif;max-width:800px;margin:20px auto;padding:0 15px;background:#f5f5f5;}
+    .container{background:#fff;padding:20px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.1);}
+    h2{margin-top:0;color:#333;}
+    .form-group{margin-bottom:15px;}
+    label{display:block;margin-bottom:5px;font-weight:bold;color:#555;}
+    textarea,input[type=text]{width:100%;box-sizing:border-box;padding:10px;border:1px solid #ccc;border-radius:4px;font-family:monospace;font-size:14px;}
+    textarea{min-height:120px;resize:vertical;}
+    fieldset{border:none;padding:0;margin:0;}
+    .options{margin:10px 0;}
+    .options label{font-weight:normal;margin-right:15px;}
+    .buttons{margin:15px 0;}
+    button{background:#007cba;color:#fff;border:none;padding:10px 15px;border-radius:4px;cursor:pointer;font-size:14px;margin-right:10px;}
+    button:hover{background:#005a87;}
+    button:disabled{background:#ccc;cursor:not-allowed;}
+    .stats{font-size:.9em;color:#666;margin-bottom:10px;}
+    #results{background:#f9f9f9;border:1px solid #ddd;border-radius:4px;padding:15px;max-height:400px;overflow-y:auto;}
+    .link-item{word-break:break-all;margin-bottom:8px;background:#fff;padding:5px;border-left:3px solid #007cba;font-size:13px;font-family:monospace;}
+    .no-links{color:#999;font-style:italic;text-align:center;padding:20px;}
+</style>
+</head>
+<body>
+<div class="container">
+    <h2>Link Filter</h2>
+    <p>Paste your list of links separated with spaces or lines. Enter keywords to remove, any link that contains <strong>any</strong> of the keywords will be filtered out.</p>
+
+    <div class="form-group">
+        <label for="linksInput">Your Links</label>
+        <textarea id="linksInput" placeholder="https://example.com/page1?a=1&b=2
+https://other-site.com/items/123/456
+https://example.com/page2"></textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="keywordsInput">Keywords to Remove</label>
+        <input type="text" id="keywordsInput" placeholder="e.g. example.com, page1, test">
+        <small>Separate keywords with commas or spaces.</small>
+    </div>
+
+    <fieldset class="options">
+        <h3>Options</h3>
+
+        <span>Separator:</span>
+        <label><input type="radio" name="sep" value="newline" checked> New lines</label>
+        <label><input type="radio" name="sep" value="space"> Spaces</label>
+
+        <br><br>
+
+        <span>Format:</span>
+        <label><input type="radio" name="fmt" value="raw" checked> Raw URLs</label>
+        <label><input type="radio" name="fmt" value="markdown"> Markdown links</label>
+        <label><input type="radio" name="fmt" value="html"> Hyperlinks </label>
+    </fieldset>
+
+    <div class="buttons">
+        <button id="copyBtn" onclick="copyResults()" disabled>Copy Filtered Links</button>
+        <button onclick="clearAll()">Clear</button>
+    </div>
+
+    <div class="stats" id="stats">Total: 0 | Kept: 0 | Removed: 0</div>
+
+    <div id="results"><div class="no-links">Filtered links will appear here…</div></div>
+</div>
+
+<script>
+const linksInput    = document.getElementById('linksInput');
+const keywordsInput = document.getElementById('keywordsInput');
+const resultsDiv    = document.getElementById('results');
+const statsDiv      = document.getElementById('stats');
+const copyBtn       = document.getElementById('copyBtn');
+const sepRadios     = document.getElementsByName('sep');
+const fmtRadios     = document.getElementsByName('fmt');
+
+let filteredLinks = [];   
+
+function processAndFilter() {
+    const rawLinks = linksInput.value;
+    const rawKws   = keywordsInput.value;
+
+    const allLinks = rawLinks.split(/\s+/).filter(l => l.trim() !== '');
+
+    const keywords = rawKws
+        .split(/[\s,]+/)
+        .map(k => k.trim().toLowerCase())
+        .filter(k => k !== '');
+
+    const kept = [];
+    let removed = 0;
+    allLinks.forEach(link => {
+        const lower = link.toLowerCase();
+        const shouldRemove = keywords.some(kw => lower.includes(kw));
+        if (shouldRemove) removed++;
+        else kept.push(link);
+    });
+
+    filteredLinks = kept;          
+    updateUI(kept, allLinks.length, removed);
+}
+
+function updateUI(keptLinks, total, removed) {
+    statsDiv.textContent = `Total: ${total} | Kept: ${keptLinks.length} | Removed: ${removed}`;
+
+    if (keptLinks.length === 0) {
+        resultsDiv.innerHTML = '<div class="no-links">No links to show (all filtered out or none entered).</div>';
+        copyBtn.disabled = true;
+        return;
+    }
+
+    const fmt = getSelectedValue(fmtRadios);
+    const html = keptLinks.map(url => {
+        const safe = escapeHtml(url);
+        if (fmt === 'html') {
+            return `<div class="link-item"><a href="${safe}" target="_blank">${safe}</a></div>`;
+        }
+        if (fmt === 'markdown') {
+
+            const md = `[${url}](${url})`;
+            return `<div class="link-item">${escapeHtml(md)}</div>`;
+        }
+
+        return `<div class="link-item">${safe}</div>`;
+    }).join('');
+    resultsDiv.innerHTML = html;
+    copyBtn.disabled = false;
+}
+
+function escapeHtml(str) {
+    return str.replace(/&/g,'&amp;')
+              .replace(/</g,'&lt;')
+              .replace(/>/g,'&gt;')
+              .replace(/"/g,'&quot;')
+              .replace(/'/g,'&#039;');
+}
+function getSelectedValue(radios) {
+    return Array.from(radios).find(r=>r.checked).value;
+}
+
+async function copyResults() {
+    if (!filteredLinks.length) return;
+
+    const sep   = getSelectedValue(sepRadios) === 'space' ? ' ' : '\n';
+    const fmt   = getSelectedValue(fmtRadios);
+
+    const plain = filteredLinks.map(url => {
+        if (fmt === 'markdown') return `[${url}](${url})`;
+        return url;                
+    }).join(sep);
+
+    let html = null;
+    if (fmt === 'html') {
+        html = filteredLinks.map(url => `<a href="${escapeHtml(url)}">${escapeHtml(url)}</a>`).join(sep);
+    }
+
+    try {
+        const clipboardItem = new ClipboardItem({
+            'text/plain': new Blob([plain], {type: 'text/plain'}),
+            ...(html && {'text/html': new Blob([html], {type: 'text/html'})})
+        });
+        await navigator.clipboard.write([clipboardItem]);
+
+        const orig = copyBtn.textContent;
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => copyBtn.textContent = orig, 2000);
+    } catch (e) {
+        console.error('Clipboard write failed', e);
+        alert('Copy failed – your browser may not support the Clipboard API.');
+    }
+}
+
+function clearAll() {
+    linksInput.value = '';
+    keywordsInput.value = '';
+    document.querySelector('input[name="sep"][value="newline"]').checked = true;
+    document.querySelector('input[name="fmt"][value="raw"]').checked = true;
+    processAndFilter();
+}
+
+linksInput.addEventListener('input', processAndFilter);
+keywordsInput.addEventListener('input', processAndFilter);
+sepRadios.forEach(r => r.addEventListener('change', () => {}));
+fmtRadios.forEach(r => r.addEventListener('change', processAndFilter));
+
+processAndFilter();
+</script>
+</body>
+</html>
