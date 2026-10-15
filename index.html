@@ -1,184 +1,287 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<title>Link Filter</title>
-<style>
-    body{font-family:Arial,sans-serif;max-width:800px;margin:20px auto;padding:0 15px;background:#f5f5f5;}
-    .container{background:#fff;padding:20px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.1);}
-    h2{margin-top:0;color:#333;}
-    .form-group{margin-bottom:15px;}
-    label{display:block;margin-bottom:5px;font-weight:bold;color:#555;}
-    textarea,input[type=text]{width:100%;box-sizing:border-box;padding:10px;border:1px solid #ccc;border-radius:4px;font-family:monospace;font-size:14px;}
-    textarea{min-height:120px;resize:vertical;}
-    fieldset{border:none;padding:0;margin:0;}
-    .options{margin:10px 0;}
-    .options label{font-weight:normal;margin-right:15px;}
-    .buttons{margin:15px 0;}
-    button{background:#007cba;color:#fff;border:none;padding:10px 15px;border-radius:4px;cursor:pointer;font-size:14px;margin-right:10px;}
-    button:hover{background:#005a87;}
-    button:disabled{background:#ccc;cursor:not-allowed;}
-    .stats{font-size:.9em;color:#666;margin-bottom:10px;}
-    #results{background:#f9f9f9;border:1px solid #ddd;border-radius:4px;padding:15px;max-height:400px;overflow-y:auto;white-space:pre-wrap;font-family:monospace;font-size:13px;user-select:text;}
-    .no-links{color:#999;font-style:italic;text-align:center;padding:20px;}
-    #results ::selection{background:rgba(0,0,0,0.1);color:inherit;}
-    #results a::selection{background:rgba(0,0,0,0.1);color:inherit;}
-</style>
+    <meta charset="UTF-8">
+    <title>Link Filter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 15px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, .1);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        textarea,
+        input[type=text] {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        fieldset {
+            border: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .options {
+            margin: 10px 0;
+        }
+
+        .options label {
+            font-weight: normal;
+            margin-right: 15px;
+        }
+
+        .buttons {
+            margin: 15px 0;
+        }
+
+        button {
+            background: #007cba;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            background: #005a87;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .stats {
+            font-size: .9em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        #results {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 13px;
+            user-select: text;
+        }
+
+        .no-links {
+            color: #999;
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #results ::selection {
+            background: rgba(0, 0, 0, 0.1);
+            color: inherit;
+        }
+
+        #results a::selection {
+            background: rgba(0, 0, 0, 0.1);
+            color: inherit;
+        }
+    </style>
 </head>
+
 <body>
-<div class="container">
-    <h2>Link Filter</h2>
-    <p>Paste your list of links separated with spaces or lines. Enter keywords to remove; any link that contains <strong>any</strong> of the keywords will be filtered out.</p>
-
-    <div class="form-group">
-        <label for="linksInput">Your Links</label>
-        <textarea id="linksInput" placeholder="https://example.com/page1?a=1&b=2
-https://other-site.com/items/123/456
-https://example.com/page2"></textarea>
+    <div class="container">
+        <h2>Link Filter</h2>
+        <p>Paste your list of links separated with spaces or lines. Enter keywords to remove; any link that contains <strong>any</strong> of the keywords will be filtered out.</p>
+        <div class="form-group">
+            <label for="linksInput">Your Links</label>
+            <textarea id="linksInput" placeholder="https://example.com/page1?a=1&b=2https://other-site.com/items/123/456https://example.com/page2"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="keywordsInput">Keywords to Remove</label>
+            <input type="text" id="keywordsInput" placeholder="e.g. example.com, page1, test">
+            <small>Separate keywords with commas or spaces.</small>
+        </div>
+        <fieldset class="options">
+            <h3>Options</h3>
+            <span>Separator:</span>
+            <label><input type="radio" name="sep" value="newline" checked> New lines</label>
+            <label><input type="radio" name="sep" value="space"> Spaces</label>
+            <br><br>
+            <span>Format:</span>
+            <label><input type="radio" name="fmt" value="raw" checked> Raw URLs</label>
+            <label><input type="radio" name="fmt" value="markdown"> Markdown links</label>
+            <label><input type="radio" name="fmt" value="html"> Hyperlinks</label>
+            <div id="markdownOptions" style="display:none;margin-top:10px;">
+                <label for="markdownText">Link text</label>
+                <input type="text" id="markdownText" placeholder="Enter link text">
+            </div>
+        </fieldset>
+        <div class="buttons">
+            <button id="copyBtn" disabled>Copy Filtered Links</button>
+            <button onclick="clearAll()">Clear</button>
+        </div>
+        <div class="stats" id="stats">Total: 0 | Kept: 0 | Removed: 0</div>
+        <pre id="results"><div class="no-links">Filtered links will appear here…</div></pre>
     </div>
+    <script>
+        const linksInput = document.getElementById('linksInput');
+        const keywordsInput = document.getElementById('keywordsInput');
+        const resultsDiv = document.getElementById('results');
+        const statsDiv = document.getElementById('stats');
+        const copyBtn = document.getElementById('copyBtn');
+        const sepRadios = document.getElementsByName('sep');
+        const fmtRadios = document.getElementsByName('fmt');
+        const markdownOptions = document.getElementById('markdownOptions');
+        const markdownText = document.getElementById('markdownText');
+        let filteredLinks = [];
+        let debounceTimer = null;
 
-    <div class="form-group">
-        <label for="keywordsInput">Keywords to Remove</label>
-        <input type="text" id="keywordsInput" placeholder="e.g. example.com, page1, test">
-        <small>Separate keywords with commas or spaces.</small>
-    </div>
+        function processAndFilter() {
+            const rawLinks = linksInput.value;
+            const rawKws = keywordsInput.value;
+            const allLinks = rawLinks.split(/\s+/).filter(l => l.trim() !== '');
+            const keywords = rawKws.split(/[\s,]+/).map(k => k.trim().toLowerCase()).filter(k => k !== '');
+            const kept = [];
+            let removed = 0;
+            allLinks.forEach(link => {
+                const lower = link.toLowerCase();
+                const shouldRemove = keywords.some(kw => lower.includes(kw));
+                if (shouldRemove) removed++;
+                else kept.push(link);
+            });
+            filteredLinks = kept;
+            updateUI(kept, allLinks.length, removed);
+        }
 
-    <fieldset class="options">
-        <h3>Options</h3>
-        <span>Separator:</span>
-        <label><input type="radio" name="sep" value="newline" checked> New lines</label>
-        <label><input type="radio" name="sep" value="space"> Spaces</label>
+        function updateUI(keptLinks, total, removed) {
+            statsDiv.textContent = `Total: ${total} | Kept: ${keptLinks.length} | Removed: ${removed}`;
+            if (keptLinks.length === 0) {
+                resultsDiv.innerHTML = '<div class="no-links">No links to show (all filtered out or none entered).</div>';
+                copyBtn.disabled = true;
+                return;
+            }
+            const sep = getSelectedValue(sepRadios) === 'space' ? ' ' : '\n';
+            const fmt = getSelectedValue(fmtRadios);
+            const custom = markdownText.value.trim();
+            const output = keptLinks.map(url => {
+                if (fmt === 'markdown') {
+                    const text = custom || url;
+                    return `[${text}](${url})`;
+                }
+                if (fmt === 'html') return `<a href="${url}">${url}</a>`;
+                return url;
+            }).join(sep);
+            if (fmt === 'html') resultsDiv.innerHTML = output;
+            else resultsDiv.textContent = output;
+            copyBtn.disabled = false;
+        }
 
-        <br><br>
+        function getSelectedValue(radios) {
+            return Array.from(radios).find(r => r.checked).value;
+        }
+        async function copyResults() {
+            if (!filteredLinks.length) return;
+            const sep = getSelectedValue(sepRadios) === 'space' ? ' ' : '\n';
+            const fmt = getSelectedValue(fmtRadios);
+            const custom = markdownText.value.trim();
+            const plain = filteredLinks.map(url => {
+                if (fmt === 'markdown') {
+                    const text = custom || url;
+                    return `[${text}](${url})`;
+                }
+                if (fmt === 'html') return `<a href="${url}">${url}</a>`;
+                return url;
+            }).join(sep);
+            const html = fmt === 'html' ? filteredLinks.map(url => `<a href="${url}">${url}</a>`).join(sep) : plain;
+            try {
+                const item = new ClipboardItem({
+                    'text/plain': new Blob([plain], {
+                        type: 'text/plain'
+                    }),
+                    'text/html': new Blob([html], {
+                        type: 'text/html'
+                    })
+                });
+                await navigator.clipboard.write([item]);
+            } catch (err) {
+                const textarea = document.createElement('textarea');
+                textarea.value = plain;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+            }
+            const original = copyBtn.textContent;
+            copyBtn.textContent = 'Copied!';
+            setTimeout(() => copyBtn.textContent = original, 2000);
+        }
 
-        <span>Format:</span>
-        <label><input type="radio" name="fmt" value="raw" checked> Raw URLs</label>
-        <label><input type="radio" name="fmt" value="markdown"> Markdown links</label>
-        <label><input type="radio" name="fmt" value="html"> Hyperlinks</label>
-    </fieldset>
+        function clearAll() {
+            linksInput.value = '';
+            keywordsInput.value = '';
+            document.querySelector('input[name="sep"][value="newline"]').checked = true;
+            document.querySelector('input[name="fmt"][value="raw"]').checked = true;
+            processAndFilter();
+        }
 
-    <div class="buttons">
-        <button id="copyBtn" disabled>Copy Filtered Links</button>
-        <button onclick="clearAll()">Clear</button>
-    </div>
-
-    <div class="stats" id="stats">Total: 0 | Kept: 0 | Removed: 0</div>
-
-    <pre id="results"><div class="no-links">Filtered links will appear here…</div></pre>
-</div>
-
-<script>
-const linksInput = document.getElementById('linksInput');
-const keywordsInput = document.getElementById('keywordsInput');
-const resultsDiv = document.getElementById('results');
-const statsDiv = document.getElementById('stats');
-const copyBtn = document.getElementById('copyBtn');
-const sepRadios = document.getElementsByName('sep');
-const fmtRadios = document.getElementsByName('fmt');
-let filteredLinks = [];
-let debounceTimer = null;
-
-function processAndFilter() {
-    const rawLinks = linksInput.value;
-    const rawKws = keywordsInput.value;
-    const allLinks = rawLinks.split(/\s+/).filter(l => l.trim() !== '');
-    const keywords = rawKws.split(/[\s,]+/)
-        .map(k => k.trim().toLowerCase())
-        .filter(k => k !== '');
-    const kept = [];
-    let removed = 0;
-    allLinks.forEach(link => {
-        const lower = link.toLowerCase();
-        const shouldRemove = keywords.some(kw => lower.includes(kw));
-        if (shouldRemove) removed++;
-        else kept.push(link);
-    });
-    filteredLinks = kept;
-    updateUI(kept, allLinks.length, removed);
-}
-
-function updateUI(keptLinks, total, removed) {
-    statsDiv.textContent = `Total: ${total} | Kept: ${keptLinks.length} | Removed: ${removed}`;
-    if (keptLinks.length === 0) {
-        resultsDiv.innerHTML = '<div class="no-links">No links to show (all filtered out or none entered).</div>';
-        copyBtn.disabled = true;
-        return;
-    }
-
-    const sep = getSelectedValue(sepRadios) === 'space' ? ' ' : '\n';
-    const fmt = getSelectedValue(fmtRadios);
-    const output = keptLinks.map(url => {
-        if (fmt === 'markdown') return `[${url}](${url})`;
-        if (fmt === 'html') return `<a href="${url}">${url}</a>`;
-        return url;
-    }).join(sep);
-
-    if (fmt === 'html') resultsDiv.innerHTML = output;
-    else resultsDiv.textContent = output;
-    copyBtn.disabled = false;
-}
-
-function getSelectedValue(radios) {
-    return Array.from(radios).find(r => r.checked).value;
-}
-
-async function copyResults() {
-    if (!filteredLinks.length) return;
-
-    const sep = getSelectedValue(sepRadios) === 'space' ? ' ' : '\n';
-    const fmt = getSelectedValue(fmtRadios);
-    const plain = filteredLinks.map(url => {
-        if (fmt === 'markdown') return `[${url}](${url})`;
-        if (fmt === 'html') return `<a href="${url}">${url}</a>`;
-        return url;
-    }).join(sep);
-
-    const html = fmt === 'html'
-        ? filteredLinks.map(url => `<a href="${url}">${url}</a>`).join(sep)
-        : plain;
-
-    try {
-        const item = new ClipboardItem({
-            'text/plain': new Blob([plain], { type: 'text/plain' }),
-            'text/html':  new Blob([html], { type: 'text/html' })
-        });
-        await navigator.clipboard.write([item]);
-    } catch (err) {
-        const textarea = document.createElement('textarea');
-        textarea.value = plain;
-        textarea.style.position = 'fixed';
-        textarea.style.opacity = '0';
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
-    }
-
-    const original = copyBtn.textContent;
-    copyBtn.textContent = 'Copied!';
-    setTimeout(() => copyBtn.textContent = original, 2000);
-}
-
-function clearAll() {
-    linksInput.value = '';
-    keywordsInput.value = '';
-    document.querySelector('input[name="sep"][value="newline"]').checked = true;
-    document.querySelector('input[name="fmt"][value="raw"]').checked = true;
-    processAndFilter();
-}
-
-function scheduleProcess() {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(processAndFilter, 300);
-}
-
-linksInput.addEventListener('input', scheduleProcess);
-keywordsInput.addEventListener('input', scheduleProcess);
-sepRadios.forEach(r => r.addEventListener('change', processAndFilter));
-fmtRadios.forEach(r => r.addEventListener('change', processAndFilter));
-copyBtn.addEventListener('click', copyResults);
-
-processAndFilter();
-</script>
+        function scheduleProcess() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(processAndFilter, 300);
+        }
+        linksInput.addEventListener('input', scheduleProcess);
+        keywordsInput.addEventListener('input', scheduleProcess);
+        sepRadios.forEach(r => r.addEventListener('change', processAndFilter));
+        fmtRadios.forEach(r => r.addEventListener('change', e => {
+            processAndFilter();
+            markdownOptions.style.display = e.target.value === 'markdown' ? 'block' : 'none';
+        }));
+        markdownText.addEventListener('input', processAndFilter);
+        copyBtn.addEventListener('click', copyResults);
+        processAndFilter();
+    </script>
 </body>
+
 </html>
